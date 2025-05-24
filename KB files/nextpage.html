@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>spy chat</title>
+  <style>
+        body {
+            background-image: url('spy-chat-logo-images-260nw-1638769846.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #chatBar {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    #chatMessages {
+      margin-top: 30px;
+      text-align: left;
+      width: 60%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .message {
+      background-color: #004400;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+    </style>
+</head>
+<body>
+
+<h1>Agent Caleb's Spy Chat</h1>
+
+  <div id="chatBar">
+    <input type="text" id="spyInput" placeholder="Type your spy message here...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div id="chatMessages">
+    <!-- Messages will appear here -->
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById("spyInput");
+      const message = input.value.trim();
+
+      if (message === "") {
+        alert("Type your message, Agent!");
+        return;
+      }
+
+      // Create a new message box
+      const messageBox = document.createElement("div");
+      messageBox.className = "message";
+      messageBox.textContent = message;
+
+      // Add the message to the chat
+      document.getElementById("chatMessages").appendChild(messageBox);
+
+      // Clear the input box
+      input.value = "";
+    }
+</script>
+</body>
+</html>

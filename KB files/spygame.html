@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spy Platformer Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #character-select, #game-area, #weapon-select {
+            width: 800px; margin: 30px auto; display: none;
+        }
+        #character-select { display: block; text-align: center; }
+        .character {
+            display: inline-block; width: 120px; height: 180px; background: #e0e0e0;
+            border: 3px solid #888; border-radius: 18px; margin: 25px 20px; cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s; position: relative;
+        }
+        .character.selected { border-color: #227aff; box-shadow: 0 0 10px #227aff77; }
+        .char-emoji { font-size: 70px; margin-top: 24px; }
+        .char-name { font-weight: bold; font-size: 22px; margin-top: 15px; }
+        .char-desc { font-size: 15px; color: #444; margin: 5px 8px 0 8px; }
+        #play-btn {
+            margin-top: 30px; padding: 16px 45px; font-size: 23px;
+            background: #227aff; color: white; border: none; border-radius: 9px; cursor: pointer;
+        }
+        #game-area { height: 400px; background-color: #2e4053; border: 2px solid #212121;
+            position: relative; overflow: hidden;
+        }
+        #player {
+            width: 60px; height: 120px; position: absolute; bottom: 10px;
+            left: 48%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;
+        }
+        #player-emoji { font-size: 100px; transition: filter 0.2s; }
+        #weapon-visual { font-size: 36px; margin-top: -12px; display: none; }
+        .enemy {
+            width: 55px; height: 105px; font-size: 90px; background: #fff3e0; border: 2px solid #b68c00;
+            color: #242424; border-radius: 13px; position: absolute; left: 0; bottom: 10px;
+            display: flex; align-items: flex-end; justify-content: center; flex-direction: column;
+        }
+        .enemy-health-bar { width: 40px; height: 10px; background: #ff8888; border-radius: 4px;
+            margin-bottom: 6px; margin-left: 5px; overflow: hidden;
+        }
+        .enemy-health { height: 100%; background: #52ff68; }
+        #weapon-select {
+            display: flex; justify-content: space-around; align-items: center;
+            background: #f5f5f5; padding: 28px 0; border: 2px solid #333; border-radius: 8px; margin-bottom: 16px;
+        }
+        .weapon {
+            width: 80px; height: 80px; border: 3px solid #c5c5c5; border-radius: 12px; background: #fffbe9;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 35px; cursor: pointer; transition: border-color 0.2s;
+        }
+        .weapon.selected { border-color: #227aff; }
+        .weapon-label { margin-top: 7px; font-size: 17px; color: #444; }
+        #attack-btn {
+            margin: 15px auto 0 auto; font-size: 23px; padding: 11px 40px; display: block;
+            background: #00bf60; color: white; border: none; border-radius: 7px; cursor: pointer;
+        }
+        #status { text-align: center; font-size: 20px; margin-top: 18px; color: #fff; }
+        #heart-bar {
+            text-align: center; margin: 10px auto; font-size: 40px;
+        }
+        #play-again-btn {
+            display: none;
+            margin: 25px auto;
+            font-size: 22px;
+            background: #ff4040;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 50px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #4442;
+            transition: background 0.2s;
+        }
+        #play-again-btn:hover {
+            background: #c70000;
+        }
+    </style>
+</head>
+<body>
+<audio id="bg-music" loop>
+  <source src="https://cdn.pixabay.com/audio/2023/03/27/audio_12e4151b59.mp3" type="audio/mpeg">
+</audio>
+
+<div id="character-select">
+    <h2>Select Your Spy Character</h2>
+    <div id="character-list">
+        <div class="character" data-index="0">
+            <div class="char-emoji">🕵️‍♂️</div>
+            <div class="char-name">Agent Night</div>
+            <div class="char-desc">Master of disguise</div>
+        </div>
+        <div class="character" data-index="1">
+            <div class="char-emoji">🕵️‍♀️</div>
+            <div class="char-name">Agent Shadow</div>
+            <div class="char-desc">Stealthy infiltrator</div>
+        </div>
+        <div class="character" data-index="2">
+            <div class="char-emoji">🧑‍💼</div>
+            <div class="char-name">Agent Cipher</div>
+            <div class="char-desc">Code-breaking genius</div>
+        </div>
+        <div class="character" data-index="3">
+            <div class="char-emoji">🕶️</div>
+            <div class="char-name">Agent Viper</div>
+            <div class="char-desc">Tech gadgets expert</div>
+        </div>
+    </div>
+    <button id="play-btn" disabled>Play</button>
+</div>
+
+<div id="weapon-select">
+    <div class="weapon" data-weapon="Pen">
+        <span>🖊️</span>
+        <span class="weapon-label">Hidden Pen Dart</span>
+    </div>
+    <div class="weapon" data-weapon="Camera">
+        <span>📷</span>
+        <span class="weapon-label">Spy Camera</span>
+    </div>
+    <div class="weapon" data-weapon="Watch">
+        <span>⌚</span>
+        <span class="weapon-label">Laser Watch</span>
+    </div>
+    <div class="weapon" data-weapon="Briefcase">
+        <span>💼</span>
+        <span class="weapon-label">Exploding Briefcase</span>
+    </div>
+</div>
+
+<div id="heart-bar"></div>
+
+<div id="game-area">
+    <div id="player" style="display:none;">
+        <div id="player-emoji"></div>
+        <div id="weapon-visual"></div>
+    </div>
+</div>
+
+<button id="attack-btn" disabled>Attack</button>
+<div id="status"></div>
+<button id="play-again-btn">Play Again</button>
+
+<script>
+    // --- Character Selection ---
+    const characters = [
+        { name: "Agent Night", emoji: "🕵️‍♂️", desc: "Master of disguise" },
+        { name: "Agent Shadow", emoji: "🕵️‍♀️", desc: "Stealthy infiltrator" },
+        { name: "Agent Cipher", emoji: "🧑‍💼", desc: "Code-breaking genius" },
+        { name: "Agent Viper", emoji: "🕶️", desc: "Tech gadgets expert" },
+    ];
+    let selectedCharacterIndex = null;
+    let selectedWeapon = null;
+    let currentEnemy = null;
+    let attackBtn = document.getElementById("attack-btn");
+    let statusDiv = document.getElementById("status");
+    let gameArea = document.getElementById("game-area");
+    let playerDiv = document.getElementById("player");
+    let weaponVisual = document.getElementById("weapon-visual");
+    let playerEmoji = document.getElementById("player-emoji");
+    let weaponSelectDiv = document.getElementById("weapon-select");
+    let weaponSelectBtns = document.querySelectorAll(".weapon");
+    let playBtn = document.getElementById("play-btn");
+    let playAgainBtn = document.getElementById("play-again-btn");
+    let heartBar = document.getElementById("heart-bar");
+    let bgMusic = document.getElementById("bg-music");
+
+    // Health system
+    let maxPlayerHealth = 5;
+    let playerHealth = maxPlayerHealth;
+
+    // Helper to create/update heart display
+    function drawHearts() {
+        let hearts = "";
+        for (let i = 0; i < playerHealth; i++) hearts += "❤️";
+        for (let i = playerHealth; i < maxPlayerHealth; i++) hearts += "🤍";
+        heartBar.innerHTML = hearts;
+    }
+
+    // Character Selection Logic
+    document.querySelectorAll(".character").forEach(charEl => {
+        charEl.onclick = () => {
+            document.querySelectorAll(".character").forEach(c => c.classList.remove("selected"));
+            charEl.classList.add("selected");
+            selectedCharacterIndex = parseInt(charEl.getAttribute("data-index"));
+            playBtn.disabled = false;
+        };
+    });
+
+    playBtn.onclick = () => {
+        document.getElementById("character-select").style.display = "none";
+        weaponSelectDiv.style.display = "flex";
+    };
+
+    // --- Weapon Selection Logic ---
+    weaponSelectBtns.forEach(weapBtn => {
+        weapBtn.onclick = () => {
+            weaponSelectBtns.forEach(w => w.classList.remove("selected"));
+            weapBtn.classList.add("selected");
+            selectedWeapon = weapBtn.getAttribute("data-weapon");
+            setTimeout(() => {
+                startGame();
+            }, 600);
+        };
+    });
+
+    function startGame() {
+        weaponSelectDiv.style.display = "none";
+        gameArea.style.display = "block";
+        playerDiv.style.display = "flex";
+        playAgainBtn.style.display = "none";
+        playerHealth = maxPlayerHealth;
+        drawHearts();
+        showSelectedCharacter();
+        showWeapon();
+        spawnEnemy();
+        attackBtn.disabled = false;
+        statusDiv.textContent = "Attack the enemy 5 times to defeat it!";
+        // Start spy music
+        if (bgMusic) {
+            bgMusic.currentTime = 0;
+            bgMusic.play().catch(() => {
+                document.body.addEventListener('click', function tryPlay() {
+                    bgMusic.play();
+                    document.body.removeEventListener('click', tryPlay);
+                });
+            });
+        }
+    }
+
+    // --- Player Visuals ---
+    function showSelectedCharacter() {
+        let char = characters[selectedCharacterIndex];
+        playerEmoji.textContent = char.emoji;
+    }
+    function showWeapon() {
+        let weaponEmoji = {
+            "Pen": "🖊️",
+            "Camera": "📷",
+            "Watch": "⌚",
+            "Briefcase": "💼"
+        }[selectedWeapon] || "";
+        weaponVisual.style.display = weaponEmoji ? "block" : "none";
+        weaponVisual.textContent = weaponEmoji;
+    }
+
+    // --- Enemy Management ---
+    function spawnEnemy() {
+        // Only one enemy at a time
+        if (currentEnemy && currentEnemy.div && currentEnemy.div.parentNode) return;
+
+        let enemy = document.createElement("div");
+        enemy.className = "enemy";
+        enemy.setAttribute("data-id", "1");
+        enemy.style.left = "0px";
+        enemy.style.bottom = "10px";
+        let enemyObj = {
+            health: 5,
+            div: enemy,
+            attackTimer: null,
+            attackReady: false
+        };
+        enemy.innerHTML = `
+            <div class="enemy-health-bar"><div class="enemy-health" style="width:100%"></div></div>
+            <div>🦹‍♂️</div>
+        `;
+        gameArea.appendChild(enemy);
+
+        // Animate movement to player
+        let pos = 0;
+        let interval = setInterval(function () {
+            if (!enemy.parentNode) { clearInterval(interval); return; }
+            pos += 6;
+            enemy.style.left = pos + "px";
+            let target = gameArea.offsetWidth / 2 - 30;
+            if (pos >= target) {
+                clearInterval(interval);
+                // Enemy now attacks player every 2 seconds
+                enemyObj.attackReady = true;
+                enemyObj.attackTimer = setInterval(function() {
+                    if (playerHealth > 0 && enemyObj.attackReady) {
+                        playerHealth--;
+                        drawHearts();
+                        if (playerHealth <= 0) {
+                            gameOver();
+                            clearInterval(enemyObj.attackTimer);
+                        }
+                    }
+                }, 2000);
+            }
+        }, 33);
+
+        currentEnemy = enemyObj;
+        attackBtn.disabled = false;
+    }
+
+    // --- Combat Logic ---
+    attackBtn.onclick = function () {
+        if (!currentEnemy || playerHealth <= 0) return;
+        currentEnemy.health -= 1;
+        playerEmoji.style.filter = "brightness(2.5) drop-shadow(0 0 10px #fff700)";
+        setTimeout(()=>{playerEmoji.style.filter = "";}, 130);
+
+        // Update enemy health bar
+        let healthPercent = Math.max(0, currentEnemy.health) / 5 * 100;
+        let healthBar = currentEnemy.div.querySelector(".enemy-health");
+        if (healthBar) healthBar.style.width = healthPercent + "%";
+
+        if (currentEnemy.health <= 0) {
+            // Enemy defeated
+            if (currentEnemy.attackTimer) clearInterval(currentEnemy.attackTimer);
+            if (currentEnemy.div.parentNode) gameArea.removeChild(currentEnemy.div);
+            currentEnemy = null;
+            statusDiv.textContent = `Enemy defeated! New enemy appears...`;
+            attackBtn.disabled = true;
+            setTimeout(() => {
+                if (playerHealth > 0) spawnEnemy();
+            }, 1000);
+        }
+    };
+
+    // Game over
+    function gameOver() {
+        attackBtn.disabled = true;
+        statusDiv.textContent = "💀 Game Over! You lost all your hearts.";
+        playAgainBtn.style.display = "block";
+        if (bgMusic) bgMusic.pause();
+    }
+
+    // Play Again Button
+    playAgainBtn.onclick = function() {
+        resetGame();
+    };
+
+    // Reset everything to character select
+    function resetGame() {
+        // Remove enemy
+        if (currentEnemy && currentEnemy.div && currentEnemy.div.parentNode)
+            gameArea.removeChild(currentEnemy.div);
+        if (currentEnemy && currentEnemy.attackTimer)
+            clearInterval(currentEnemy.attackTimer);
+        currentEnemy = null;
+
+        // Reset state
+        selectedCharacterIndex = null;
+        selectedWeapon = null;
+        weaponVisual.textContent = '';
+        playerEmoji.textContent = '';
+        document.querySelectorAll(".character").forEach(c => c.classList.remove("selected"));
+        weaponSelectBtns.forEach(w => w.classList.remove("selected"));
+        document.getElementById("character-select").style.display = "block";
+        weaponSelectDiv.style.display = "none";
+        gameArea.style.display = "none";
+        playerDiv.style.display = "none";
+        statusDiv.textContent = '';
+        playBtn.disabled = true;
+        playAgainBtn.style.display = "none";
+        playerHealth = maxPlayerHealth;
+        drawHearts();
+        if (bgMusic) bgMusic.pause();
+    }
+
+    // Draw initial empty hearts (so it doesn't flash empty space)
+    drawHearts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+<DOCTYPE.html>
+<HTML>
+<head>
+<title>main spy hq</title>
+</head>
+<body>
+<h1>welcome to the spy hq agent</HQ>
+<p>top secret missions will be listed here.</p>
+</body>
+</html>
